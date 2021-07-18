@@ -1,4 +1,9 @@
 pipeline {
+    environment {
+    registry = "sarahnmachi/shecode1.0"
+    registryCredential = 'Docker'
+    dockerImage = ''
+  }
     agent any
      tools {nodejs "nodejs"}
     stages {
@@ -17,5 +22,21 @@ pipeline {
                 sh './jenkins/scripts/test.sh'
             }
         }
+         stage('Building image') {
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+    stage('Deploy Image') {
+      steps{
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
+          }
+        }
+      }
+    }
     }
 }
